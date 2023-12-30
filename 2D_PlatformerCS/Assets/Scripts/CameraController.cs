@@ -15,7 +15,7 @@ public class CameraController : MonoBehaviour
 	}
 	public void Follow()
 	{
-		Vector3 targetPosition = target.position + offset;
+		Vector3 targetPosition = new Vector3(target.position.x + offset.x,transform.position.y, target.position.z + offset.z);
 		Vector3 smoothPosition = Vector3.Lerp(transform.position, targetPosition, smoothFactor);
 
 		transform.position = smoothPosition;
