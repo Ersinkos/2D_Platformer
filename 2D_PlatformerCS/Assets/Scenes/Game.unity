@@ -229,6 +229,7 @@ MonoBehaviour:
   velPower: 0.9
   frictionAmount: 0.2
   jumpForce: 8
+  jumpCutMultiplier: 0.5
   jumpCoyoteTime: 0.15
   jumpBufferTime: 0.1
   fallGravityMultiplier: 2

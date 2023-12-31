@@ -17,11 +17,12 @@ public class PlayerController : MonoBehaviour
 	[Space]
 	[Header("Jumping")]
 	[SerializeField] private float jumpForce;
+	[SerializeField] private float jumpCutMultiplier;
 	[SerializeField] private float jumpCoyoteTime;
 	[SerializeField] private float jumpBufferTime;
 	[SerializeField] private float fallGravityMultiplier;
-	private bool isJumping;
-	private bool isFalling;
+	public bool isJumping;
+	public bool isFalling;
 	private float lastGroundedTime;
 	private float lastJumpTime;
 
@@ -48,6 +49,10 @@ public class PlayerController : MonoBehaviour
 		{
 			OnJumpInput();
 		}
+		if (Input.GetKeyUp(KeyCode.Space))
+		{
+			OnJumpUp();
+		}
 		if (isJumping)
 		{
 			if (IsGrounded())
@@ -55,24 +60,29 @@ public class PlayerController : MonoBehaviour
 				lastGroundedTime = jumpCoyoteTime;
 			}
 		}
+		//if (isJumping && rb.velocity.y < 0)
+		//{
+		//	isJumping = false;
+		//	isFalling = true;
+		//}
+		if (lastGroundedTime > 0 && !isJumping)
+		{
+			isFalling = false;
+		}
+
+		if (IsGrounded())
+		{
+			lastGroundedTime = jumpCoyoteTime;
+		}
 		if (isJumping && rb.velocity.y < 0)
 		{
 			isJumping = false;
 			isFalling = true;
 		}
-		if (lastGroundedTime > 0 && !isJumping)
-		{
-			isFalling = false;
-		}
 		if (CanJump() && lastJumpTime > 0)
 		{
 			isJumping = true;
 			isFalling = false;
-		}
-		if (IsGrounded())
-		{
-			isJumping = false;
-			lastGroundedTime = jumpCoyoteTime;
 		}
 	}
 	private void FixedUpdate()
@@ -110,5 +120,14 @@ public class PlayerController : MonoBehaviour
 	private void OnJumpInput()
 	{
 		lastJumpTime = jumpBufferTime;
+	}
+	private void OnJumpUp()
+	{
+		Debug.Log("OnJumpUp");
+		if (rb.velocity.y > 0 && isJumping)
+		{
+			rb.AddForce(Vector2.down * rb.velocity.y * (1 - jumpCutMultiplier), ForceMode2D.Impulse);
+		}
+		lastJumpTime = 0;
 	}
 }
