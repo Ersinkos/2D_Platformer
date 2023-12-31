@@ -4,48 +4,111 @@ using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
-	private float force = 10f;
-	private float speed = 5f;
+	private Vector2 moveInput;
 	private Rigidbody2D rb;
-	private bool isGrounded = true;
+	[Space]
+	[Header("Movement")]
+	[SerializeField] private float moveSpeed;
+	[SerializeField] private float acceleration;
+	[SerializeField] private float decceleration;
+	[SerializeField] private float velPower;
+	[SerializeField] private float frictionAmount;
+
+	[Space]
+	[Header("Jumping")]
+	[SerializeField] private float jumpForce;
+	[SerializeField] private float jumpCoyoteTime;
+	[SerializeField] private float jumpBufferTime;
+	[SerializeField] private float fallGravityMultiplier;
+	private bool isJumping;
+	private bool isFalling;
+	private float lastGroundedTime;
+	private float lastJumpTime;
+
+
+	[Space]
+	[Header("Ground Check")]
+	[SerializeField] Transform groundCheckPoint;
+	[SerializeField] Vector2 groundCheckSize;
+	[SerializeField] LayerMask groundLayer;
 	private void Awake()
 	{
 		rb = GetComponent<Rigidbody2D>();
+		isJumping = false;
+		isFalling = false;
+		lastGroundedTime = 0;
+		lastJumpTime = 0;
 	}
+
 	private void Update()
 	{
-		if (Input.GetKeyDown(KeyCode.Space) && isGrounded)
+		lastGroundedTime -= Time.deltaTime;
+		lastJumpTime -= Time.deltaTime;
+		if (Input.GetKeyDown(KeyCode.Space))
 		{
-			Jump();
+			OnJumpInput();
+		}
+		if (isJumping)
+		{
+			if (IsGrounded())
+			{
+				lastGroundedTime = jumpCoyoteTime;
+			}
+		}
+		if (isJumping && rb.velocity.y < 0)
+		{
+			isJumping = false;
+			isFalling = true;
+		}
+		if (lastGroundedTime > 0 && !isJumping)
+		{
+			isFalling = false;
+		}
+		if (CanJump() && lastJumpTime > 0)
+		{
+			isJumping = true;
+			isFalling = false;
+		}
+		if (IsGrounded())
+		{
+			isJumping = false;
+			lastGroundedTime = jumpCoyoteTime;
 		}
 	}
 	private void FixedUpdate()
 	{
-		MovePlayer();
-	}
-	public void MovePlayer()
-	{
-		float x = Input.GetAxis("Horizontal");
-		transform.Translate(new Vector2(x, 0f) * Time.fixedDeltaTime * speed);
-	}
-	public void Jump()
-	{
-		rb.AddForce(Vector2.up * force, ForceMode2D.Impulse);
-	}
-	private void OnCollisionEnter2D(Collision2D collision)
-	{
-		if (collision.gameObject.CompareTag("Ground"))
+		moveInput.x = Input.GetAxisRaw("Horizontal");
+		Run(1f);
+		if (lastJumpTime > 0 && lastGroundedTime > 0)
 		{
-			Debug.Log("Ground enter");
-			isGrounded = true;
+			Jump();
 		}
 	}
-	private void OnCollisionExit2D(Collision2D collision)
+	private void Run(float lerpAmount)
 	{
-		if (collision.gameObject.CompareTag("Ground"))
-		{
-			Debug.Log("Ground enter");
-			isGrounded = false;
-		}
+		float targetSpeed = moveInput.x * moveSpeed;
+		targetSpeed = Mathf.Lerp(rb.velocity.x, targetSpeed, lerpAmount);
+		float speedDif = targetSpeed - rb.velocity.x;
+		float accelRate = (Mathf.Abs(targetSpeed) > 0.01f) ? acceleration : decceleration;
+		float movement = Mathf.Pow(Mathf.Abs(speedDif) * accelRate, velPower) * Mathf.Sign(speedDif);
+		rb.AddForce(movement * Vector2.right, ForceMode2D.Force);
+	}
+	private void Jump()
+	{
+		lastJumpTime = 0;
+		lastGroundedTime = 0;
+		rb.AddForce(Vector2.up * jumpForce, ForceMode2D.Impulse);
+	}
+	private bool IsGrounded()
+	{
+		return Physics2D.OverlapBox(groundCheckPoint.position, groundCheckSize, 0, groundLayer);
+	}
+	private bool CanJump()
+	{
+		return lastGroundedTime > 0 && !isJumping;
+	}
+	private void OnJumpInput()
+	{
+		lastJumpTime = jumpBufferTime;
 	}
 }
