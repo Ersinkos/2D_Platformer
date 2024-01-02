@@ -223,16 +223,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9919e4c78e4a54c4b8542717ab60e6b0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  moveSpeed: 10
-  acceleration: 7
-  decceleration: 7
-  velPower: 0.9
+  moveSpeed: 9
+  acceleration: 9
+  decceleration: 9
+  velPower: 1.2
   frictionAmount: 0.2
-  jumpForce: 8
-  jumpCutMultiplier: 0.5
+  jumpForce: 12
+  jumpCutMultiplier: 0.1
   jumpCoyoteTime: 0.15
   jumpBufferTime: 0.1
-  fallGravityMultiplier: 2
+  fallGravityMultiplier: 1.9
+  isJumping: 0
+  isFalling: 0
   groundCheckPoint: {fileID: 749596626}
   groundCheckSize: {x: 0.4, y: 0.1}
   groundLayer:

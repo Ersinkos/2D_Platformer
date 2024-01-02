@@ -6,6 +6,7 @@ public class PlayerController : MonoBehaviour
 {
 	private Vector2 moveInput;
 	private Rigidbody2D rb;
+
 	[Space]
 	[Header("Movement")]
 	[SerializeField] private float moveSpeed;
@@ -25,8 +26,7 @@ public class PlayerController : MonoBehaviour
 	public bool isFalling;
 	private float lastGroundedTime;
 	private float lastJumpTime;
-
-
+	private float gravityScale;
 	[Space]
 	[Header("Ground Check")]
 	[SerializeField] Transform groundCheckPoint;
@@ -39,17 +39,18 @@ public class PlayerController : MonoBehaviour
 		isFalling = false;
 		lastGroundedTime = 0;
 		lastJumpTime = 0;
+		gravityScale = rb.gravityScale;
 	}
 
 	private void Update()
 	{
 		lastGroundedTime -= Time.deltaTime;
 		lastJumpTime -= Time.deltaTime;
-		if (Input.GetKeyDown(KeyCode.Space))
+		if (Input.GetKeyDown(KeyCode.Space)) //Space tuþuna basýldý
 		{
 			OnJumpInput();
 		}
-		if (Input.GetKeyUp(KeyCode.Space))
+		if (Input.GetKeyUp(KeyCode.Space)) //Space tuþu býrakýldý
 		{
 			OnJumpUp();
 		}
@@ -60,11 +61,6 @@ public class PlayerController : MonoBehaviour
 				lastGroundedTime = jumpCoyoteTime;
 			}
 		}
-		//if (isJumping && rb.velocity.y < 0)
-		//{
-		//	isJumping = false;
-		//	isFalling = true;
-		//}
 		if (lastGroundedTime > 0 && !isJumping)
 		{
 			isFalling = false;
@@ -84,6 +80,15 @@ public class PlayerController : MonoBehaviour
 			isJumping = true;
 			isFalling = false;
 		}
+		if (rb.velocity.y < 0)
+		{
+			rb.gravityScale = gravityScale * fallGravityMultiplier;
+		}
+		else
+		{
+			rb.gravityScale = gravityScale;
+		}
+
 	}
 	private void FixedUpdate()
 	{
@@ -123,7 +128,6 @@ public class PlayerController : MonoBehaviour
 	}
 	private void OnJumpUp()
 	{
-		Debug.Log("OnJumpUp");
 		if (rb.velocity.y > 0 && isJumping)
 		{
 			rb.AddForce(Vector2.down * rb.velocity.y * (1 - jumpCutMultiplier), ForceMode2D.Impulse);
